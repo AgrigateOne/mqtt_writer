@@ -1,0 +1,4 @@
+mqtt_writer_wrapper.sh
+log/*
+deploystats.sh
+.env.local
