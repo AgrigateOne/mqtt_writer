@@ -5,16 +5,21 @@
 require 'dotenv'
 require 'mqtt'
 require 'sequel'
+require 'logger'
 
 Dotenv.load('.env.local', '.env')
+LOGGER = Logger.new('log/mqtt_messages.log', 10, 1_024_000)
+LOG = ENV['ENABLE_LOGGING'] =~ /y/i
 
 MQTT_HOST = ENV['MQTT_HOST']
 MQTT_PORT = ENV['MQTT_PORT']
 db_name = ENV['DATABASE_URL']
 DB = if db_name == 'tinytds'
+       LOGGER.info "Connection to MSSQL: #{ENV['MSSQL_HOST']}:#{ENV['MSSQL_PORT']}/#{ENV['MSSQL_DB']}" if LOG
        Sequel.connect(adapter: :tinytds, host: ENV['MSSQL_HOST'], port: ENV['MSSQL_PORT'],
                       database: ENV['MSSQL_DB'], user: ENV['MSSQL_USER'], password: ENV['MSSQL_PW'])
      else
+       LOGGER.info "Connection to Postgresql: #{db_name}" if LOG
        Sequel.connect(db_name)
      end
 DB.extension(:connection_validator) # Ensure connections are not lost over time.
@@ -22,7 +27,7 @@ Sequel.application_timezone = :local
 Sequel.database_timezone = :utc
 
 Signal.trap('INT') do
-  puts "\nReceived interupt - cleaning up..."
+  puts "\nReceived interupt - cleaning up...\n"
   # exit
   @stopper = true
   @threads.each { |t| t.kill if t&.alive? }
@@ -30,15 +35,22 @@ end
 
 que = Queue.new
 @threads = []
+LOGGER.info 'Started...' if LOG
 
 @threads << Thread.new do
   MQTT::Client.connect(MQTT_HOST, MQTT_PORT) do |c|
     # Might have to listen for '#' and append to log files named after topics too...
-    c.get('Gossamer/data/#') do |topic, message|
-      puts topic
-      puts message
-      # puts "#{topic}: #{message}. #{c.will_qos}. #{c.client_id}."
-      que << { topic: topic, msg: message, qos: c.will_qos }
+    # c.get('Gossamer/data/#') do |topic, message|
+    c.get('#') do |topic, message|
+      if topic.start_with?('Gossamer/data/')
+        LOGGER.info "Received `#{topic}` with: `#{message}`" if LOG
+        # puts "#{topic}\n"
+        # puts "#{message}\n"
+        # puts "#{topic}: #{message}. #{c.will_qos}. #{c.client_id}.\n"
+        que << { topic: topic, msg: message, qos: c.will_qos }
+      elsif LOG
+        LOGGER.info "Disacarded non-matching topic: `#{topic}` with: `#{message}`"
+      end
     end
   end
 end
@@ -119,11 +131,11 @@ CREATE TABLE mqtt_msg (
 
 CREATE TABLE dbo.mqtt_msg (
 	id int IDENTITY(1,1) NOT NULL,
-	topic nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	topic nvarchar(255) COLLATE Latin1_General_CP1_CI_AS NULL,
 	qos int NULL,
-	payload nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	mesmodule nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	plc_module nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	payload nvarchar(255) COLLATE Latin1_General_CP1_CI_AS NULL,
+	mesmodule nvarchar(255) COLLATE Latin1_General_CP1_CI_AS NULL,
+	plc_module nvarchar(255) COLLATE Latin1_General_CP1_CI_AS NULL,
 	packline int NULL,
 	machineid int NULL,
 	packcount int NULL,

@@ -45,11 +45,11 @@ CREATE TABLE mqtt_msg (
 
 CREATE TABLE dbo.mqtt_msg (
 	id int IDENTITY(1,1) NOT NULL,
-	topic nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	topic nvarchar(255) COLLATE Latin1_General_CP1_CI_AS NULL,
 	qos int NULL,
-	payload nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	mesmodule nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	plc_module nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	payload nvarchar(255) COLLATE Latin1_General_CP1_CI_AS NULL,
+	mesmodule nvarchar(255) COLLATE Latin1_General_CP1_CI_AS NULL,
+	plc_module nvarchar(255) COLLATE Latin1_General_CP1_CI_AS NULL,
 	packline int NULL,
 	machineid int NULL,
 	packcount int NULL,
@@ -93,6 +93,8 @@ MSSQL_DB=<dbname>
 MSSQL_USER=<user>
 MSSQL_PW=<password>
 ```
+
+To log captured messages to file, add: `ENABLE_LOGGING=y`.
 
 ## Prerequisites
 
