@@ -1,0 +1,4 @@
+#!/bin/bash
+source /usr/local/share/chruby/chruby.sh && \
+  chruby $RUBY && \
+  exec bundle exec $CURRENT/mqtt_writer.rb

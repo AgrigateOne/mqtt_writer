@@ -1,0 +1,14 @@
+[Unit]
+Description=Crossbeams MQTT Writer
+Requires=network.target
+
+[Service]
+Type=simple
+User=$USER
+Group=$USER
+WorkingDirectory=$CURRENT
+Restart=on-failure
+ExecStart=$SHARED/mqtt_writer_wrapper.sh
+
+[Install]
+WantedBy=multi-user.target

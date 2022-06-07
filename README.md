@@ -105,7 +105,22 @@ sudo systemctl status mosquitto
 
 ### FreeTDS
 
-Only do this if connecting to MSSQL.
+Required for connecting to MSSQL, must be present so that tiny_tds gem install succeeds.
 ```sh
 sudo apt install freetds-dev
+```
+
+## Install
+
+Locally (replacing `<tgt>` with the dpeloyment target), run:
+```sh
+bundle exec cap <tgt> deploy:check
+bundle exec cap <tgt> devops:copy_initial
+bundle exec cap <tgt> deploy
+```
+On the target machine, run:
+```sh
+sudo cp crossbeams-mqtt-writer.service /etc/systemd/system/crossbeams-mqtt-writer.service
+sudo systemctl enable crossbeams-mqtt-writer
+sudo systemctl start crossbeams-mqtt-writer
 ```
