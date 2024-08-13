@@ -6,7 +6,7 @@ lock '~> 3.17.0'
 set :chruby_ruby, 'ruby-2.5.8'
 
 set :application, 'mqtt_writer'
-set :repo_url, 'git@github.com:NoSoft-SA/mqtt_writer.git'
+set :repo_url, 'git@github.com:AgrigateOne/mqtt_writer.git'
 set :branch, 'main'
 
 # Default branch is :master
