@@ -3,7 +3,7 @@
 # config valid for current version and patch releases of Capistrano
 lock '~> 3.17.0'
 
-set :chruby_ruby, 'ruby-2.5.8'
+set :chruby_ruby, 'ruby-3.3.4'
 
 set :application, 'mqtt_writer'
 set :repo_url, 'git@github.com:AgrigateOne/mqtt_writer.git'
@@ -48,6 +48,21 @@ append :linked_dirs, 'log'
 set :chruby_version, -> { fetch(:chruby_ruby) }
 
 namespace :devops do
+  desc 'Upgrade Ruby version (after `chruby_ruby` changed)' # Only run this after changing :chruby_ruby
+  task :upgrade_ruby do
+    on roles(:app) do |_|
+      upload! 'shared_config_wrapper.sh.template', "#{shared_path}/shared_config_wrapper.sh"
+      execute :sed, "-i 's/$CURRENT/#{current_path.to_s.gsub('/', '\/')}/g' #{shared_path}/mqtt-writer_wrapper.sh"
+      execute :sed, "-i 's/$RUBY/#{fetch(:chruby_version)}/g' #{shared_path}/nsfile_mqtt-writerr.sh"
+
+      puts('------------------------------------------------')
+      puts('Now login to the server and restart the service:')
+      puts('sudo systemctl restart crossbeams-mqtt-writer')
+      puts('sudo systemctl status crossbeams-mqtt-writer')
+      puts('------------------------------------------------')
+    end
+  end
+
   desc 'Copy initial files'
   task :copy_initial do
     # set pty: true #### SEE if this solves the sudo cp issue...
