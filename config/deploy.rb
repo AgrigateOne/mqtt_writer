@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # config valid for current version and patch releases of Capistrano
-lock '~> 3.17.0'
+# lock '~> 3.17.0'
 
-set :chruby_ruby, 'ruby-3.3.4'
+set :chruby_ruby, 'ruby-3.3.5'
 
 set :application, 'mqtt_writer'
 set :repo_url, 'git@github.com:AgrigateOne/mqtt_writer.git'
